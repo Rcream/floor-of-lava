@@ -32,7 +32,7 @@
         Arrows or WASD: Move/Jump | Fall off = DEAD | ENTER: Start/Select | U: Upgrades | C: Skins | R: Restart | P: Pause
     </div>
     <canvas id="gameCanvas" width="800" height="400"></canvas>
-   <script>
+ <script>
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
@@ -127,15 +127,17 @@ const player = {
 
 // Skins
 const skins = [
-  { id: 0, name: 'Default Blue', color: '#4169E1', cost: 0, unlocked: true },
-  { id: 1, name: 'Lava Red', color: '#FF4444', cost: 20, unlocked: false },
-  { id: 2, name: 'Forest Green', color: '#22AA55', cost: 30, unlocked: false }
+  { id: 0, name: 'Default Blue',  color: '#4169E1', cost: 0,  unlocked: true },
+  { id: 1, name: 'Lava Red',      color: '#FF4444', cost: 20, unlocked: false },
+  { id: 2, name: 'Forest Green',  color: '#22AA55', cost: 30, unlocked: false },
+  { id: 3, name: 'Hazmat Eng',    color: '#FFD800', cost: 40, unlocked: false }, // NEW
+  { id: 4, name: 'Shadow Bot',    color: '#4B0082', cost: 50, unlocked: false }  // NEW
 ];
 let selectedSkinIndex = 0;
 let skinsMenuSelection = 0;
 
 // Balloon platforms
-const BALLOON_STAND_TIME = 50;
+const BALLOON_STAND_TIME = 45;
 const BALLOON_SHAKE_TIME = 20;
 
 function makePlatform(x, y, width, moving, startX, moveRange, moveSpeed) {
@@ -206,8 +208,8 @@ addCoinOnPlatform(platforms[3]);
 // Missions
 const missions = [
   { type: 0, target: 15, text: 'Land on 15 platforms in one run' },
-  { type: 1, target: 5, text: 'Collect 5 coins in one run' },
-  { type: 2, target: 3, text: 'Reach speed level 3' }
+  { type: 1, target: 5,  text: 'Collect 5 coins in one run' },
+  { type: 2, target: 3,  text: 'Reach speed level 3' }
 ];
 let currentMissionIndex = 0;
 let missionProgress = 0;
@@ -404,7 +406,6 @@ let mainMenuSelection = 0;
 const mainMenuItems = ['Start Run', 'Upgrades', 'Skins', 'Level Info'];
 
 let upgradesMenuSelection = 0;
-// Jump Multiplier removed from list:
 const upgradesItems = ['Coin Multiplier', 'Magnet', 'Second Chance'];
 
 let pauseMenuSelection = 0;
@@ -457,7 +458,6 @@ window.addEventListener('keydown', (e) => {
     }
     if (e.code === 'Enter') {
       const item = upgradesItems[upgradesMenuSelection];
-      // Jump Multiplier branch removed – only these three remain:
       if (item === 'Coin Multiplier') {
         const cost = 20;
         if (coins >= cost && coinMultiplier < 2) {
@@ -608,7 +608,6 @@ function resetPlayerAndPlatforms() {
   resetMissionForNewRun();
 }
 
-// startGame / restart use countdown
 function startGame() {
   resetPlayerAndPlatforms();
   countdownValue = 3;
@@ -962,14 +961,102 @@ function drawHUD() {
   }
 }
 
+// Skin‑aware robot with 5 skins
 function drawPlayerAndWarnings() {
   if (gameState === 'playing' || gameState === 'paused' || gameState === 'countdown') {
-    const currentSkin = skins[selectedSkinIndex];
-    ctx.fillStyle = currentSkin.color;
-    ctx.fillRect(player.x, player.y, player.width, player.height);
-    ctx.strokeStyle = '#000';
+    const bodyX = player.x;
+    const bodyY = player.y;
+    const bodyW = player.width;
+    const bodyH = player.height;
+
+    const skin = skins[selectedSkinIndex];
+
+    if (skin.id === 0) {
+      // Default: normal grey robot
+      ctx.fillStyle = '#666666';
+      ctx.fillRect(bodyX, bodyY + 5, bodyW, bodyH - 5);
+      ctx.fillStyle = '#888888';
+      ctx.fillRect(bodyX + 4, bodyY - 8, bodyW - 8, 12);
+      ctx.fillStyle = '#00FFEE';
+      ctx.fillRect(bodyX + 7, bodyY - 4, 4, 4);
+      ctx.fillRect(bodyX + bodyW - 11, bodyY - 4, 4, 4);
+    } else if (skin.id === 1) {
+      // Red: angry red robot
+      ctx.fillStyle = '#AA0000';
+      ctx.fillRect(bodyX, bodyY + 5, bodyW, bodyH - 5);
+      ctx.fillStyle = '#CC2222';
+      ctx.fillRect(bodyX + 4, bodyY - 8, bodyW - 8, 12);
+      ctx.strokeStyle = '#FFFF00';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(bodyX + 6, bodyY - 2);
+      ctx.lineTo(bodyX + 10, bodyY - 4);
+      ctx.moveTo(bodyX + bodyW - 6, bodyY - 2);
+      ctx.lineTo(bodyX + bodyW - 10, bodyY - 4);
+      ctx.stroke();
+    } else if (skin.id === 2) {
+      // Green: dinosaur robot
+      ctx.fillStyle = '#1f8a3b';
+      ctx.fillRect(bodyX, bodyY + 5, bodyW, bodyH - 5);
+      ctx.fillStyle = '#2cab4a';
+      ctx.fillRect(bodyX + 2, bodyY - 6, bodyW - 4, 10);
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillRect(bodyX + bodyW - 10, bodyY - 4, 4, 4);
+      ctx.fillStyle = '#000000';
+      ctx.fillRect(bodyX + bodyW - 9, bodyY - 3, 2, 2);
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillRect(bodyX + 4, bodyY + 2, 3, 3);
+      ctx.fillRect(bodyX + 8, bodyY + 2, 3, 3);
+    } else if (skin.id === 3) {
+      // Hazmat Engineer: yellow hazard suit
+      ctx.fillStyle = '#FFD800';
+      ctx.fillRect(bodyX, bodyY + 5, bodyW, bodyH - 5);
+      ctx.fillStyle = '#FFE866';
+      ctx.fillRect(bodyX + 3, bodyY - 8, bodyW - 6, 12);
+      // visor
+      ctx.fillStyle = '#333333';
+      ctx.fillRect(bodyX + 6, bodyY - 4, bodyW - 12, 6);
+      // chest hazard stripe
+      ctx.fillStyle = '#333333';
+      ctx.fillRect(bodyX, bodyY + bodyH - 10, bodyW, 4);
+      ctx.fillStyle = '#FFCC00';
+      ctx.fillRect(bodyX, bodyY + bodyH - 8, bodyW, 2);
+    } else if (skin.id === 4) {
+      // Shadow Bot: dark with purple glow
+      ctx.fillStyle = '#111122';
+      ctx.fillRect(bodyX, bodyY + 5, bodyW, bodyH - 5);
+      ctx.fillStyle = '#222244';
+      ctx.fillRect(bodyX + 4, bodyY - 8, bodyW - 8, 12);
+      // glowing purple eyes
+      ctx.fillStyle = '#C000FF';
+      ctx.fillRect(bodyX + 7, bodyY - 4, 4, 4);
+      ctx.fillRect(bodyX + bodyW - 11, bodyY - 4, 4, 4);
+      // chest core
+      ctx.fillStyle = '#C000FF';
+      ctx.fillRect(bodyX + bodyW / 2 - 3, bodyY + 10, 6, 6);
+    }
+
+    // Antenna (same for all)
+    ctx.fillStyle = '#AAAAAA';
+    ctx.fillRect(bodyX + bodyW / 2 - 1, bodyY - 14, 2, 6);
+    ctx.beginPath();
+    ctx.arc(bodyX + bodyW / 2, bodyY - 16, 2, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Arms
+    ctx.fillStyle = '#777777';
+    ctx.fillRect(bodyX - 4, bodyY + 12, 4, 10);
+    ctx.fillRect(bodyX + bodyW, bodyY + 12, 4, 10);
+
+    // Legs
+    ctx.fillStyle = '#555555';
+    ctx.fillRect(bodyX + 4, bodyY + bodyH - 5, 6, 8);
+    ctx.fillRect(bodyX + bodyW - 10, bodyY + bodyH - 5, 6, 8);
+
+    // Outline
+    ctx.strokeStyle = '#000000';
     ctx.lineWidth = 2;
-    ctx.strokeRect(player.x, player.y, player.width, player.height);
+    ctx.strokeRect(bodyX, bodyY, bodyW, bodyH);
 
     if (gameState === 'playing' && player.y + player.height > DEATH_LAVA_Y - 60) {
       const barY = 65;
