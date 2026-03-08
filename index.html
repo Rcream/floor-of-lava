@@ -32,7 +32,7 @@
         Arrows or WASD: Move/Jump | Fall off = DEAD | ENTER: Start/Select | U: Upgrades | C: Skins | R: Restart | P: Pause
     </div>
     <canvas id="gameCanvas" width="800" height="400"></canvas>
- <script>
+<script>
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
@@ -127,14 +127,16 @@ const player = {
 
 // Skins
 const skins = [
-  { id: 0, name: 'Default Blue',  color: '#4169E1', cost: 0,  unlocked: true },
-  { id: 1, name: 'Lava Red',      color: '#FF4444', cost: 20, unlocked: false },
-  { id: 2, name: 'Forest Green',  color: '#22AA55', cost: 30, unlocked: false },
-  { id: 3, name: 'Hazmat Eng',    color: '#FFD800', cost: 40, unlocked: false }, // NEW
-  { id: 4, name: 'Shadow Bot',    color: '#4B0082', cost: 50, unlocked: false }  // NEW
+  { id: 0, name: 'Default Bot', color: '#4169E1', cost: 0, unlocked: true },
+  { id: 1, name: 'Angry Bot',     color: '#FF4444', cost: 20, unlocked: false },
+  { id: 2, name: 'Dino Bot', color: '#22AA55', cost: 30, unlocked: false },
+  { id: 3, name: 'Hazmat Bot',   color: '#FFD800', cost: 40, unlocked: false },
+  { id: 4, name: 'Shadow Bot',   color: '#4B0082', cost: 50, unlocked: false }
 ];
 let selectedSkinIndex = 0;
 let skinsMenuSelection = 0;
+let skinsScrollOffset = 0;
+const SKINS_VISIBLE_COUNT = 4;
 
 // Balloon platforms
 const BALLOON_STAND_TIME = 45;
@@ -430,6 +432,7 @@ window.addEventListener('keydown', (e) => {
         gameState = 'upgrades';
       } else if (item === 'Skins') {
         skinsMenuSelection = selectedSkinIndex;
+        skinsScrollOffset = Math.max(0, Math.min(skinsMenuSelection, skins.length - SKINS_VISIBLE_COUNT));
         gameState = 'skins';
       } else if (item === 'Level Info') {
         gameState = 'levelInfo';
@@ -442,6 +445,7 @@ window.addEventListener('keydown', (e) => {
     if (e.code === 'KeyC') {
       gameState = 'skins';
       skinsMenuSelection = selectedSkinIndex;
+      skinsScrollOffset = Math.max(0, Math.min(skinsMenuSelection, skins.length - SKINS_VISIBLE_COUNT));
     }
   }
 
@@ -520,10 +524,24 @@ window.addEventListener('keydown', (e) => {
 
   if (gameState === 'skins') {
     if (e.code === 'ArrowUp') {
-      skinsMenuSelection = (skinsMenuSelection - 1 + skins.length) % skins.length;
+      if (skinsMenuSelection > 0) {
+        skinsMenuSelection--;
+      } else {
+        skinsMenuSelection = skins.length - 1;
+      }
+      if (skinsMenuSelection < skinsScrollOffset) {
+        skinsScrollOffset = skinsMenuSelection;
+      }
     }
     if (e.code === 'ArrowDown') {
-      skinsMenuSelection = (skinsMenuSelection + 1) % skins.length;
+      if (skinsMenuSelection < skins.length - 1) {
+        skinsMenuSelection++;
+      } else {
+        skinsMenuSelection = 0;
+      }
+      if (skinsMenuSelection >= skinsScrollOffset + SKINS_VISIBLE_COUNT) {
+        skinsScrollOffset = skinsMenuSelection - SKINS_VISIBLE_COUNT + 1;
+      }
     }
     if (e.code === 'Enter') {
       const skin = skins[skinsMenuSelection];
@@ -1013,10 +1031,8 @@ function drawPlayerAndWarnings() {
       ctx.fillRect(bodyX, bodyY + 5, bodyW, bodyH - 5);
       ctx.fillStyle = '#FFE866';
       ctx.fillRect(bodyX + 3, bodyY - 8, bodyW - 6, 12);
-      // visor
       ctx.fillStyle = '#333333';
       ctx.fillRect(bodyX + 6, bodyY - 4, bodyW - 12, 6);
-      // chest hazard stripe
       ctx.fillStyle = '#333333';
       ctx.fillRect(bodyX, bodyY + bodyH - 10, bodyW, 4);
       ctx.fillStyle = '#FFCC00';
@@ -1027,16 +1043,14 @@ function drawPlayerAndWarnings() {
       ctx.fillRect(bodyX, bodyY + 5, bodyW, bodyH - 5);
       ctx.fillStyle = '#222244';
       ctx.fillRect(bodyX + 4, bodyY - 8, bodyW - 8, 12);
-      // glowing purple eyes
       ctx.fillStyle = '#C000FF';
       ctx.fillRect(bodyX + 7, bodyY - 4, 4, 4);
       ctx.fillRect(bodyX + bodyW - 11, bodyY - 4, 4, 4);
-      // chest core
       ctx.fillStyle = '#C000FF';
       ctx.fillRect(bodyX + bodyW / 2 - 3, bodyY + 10, 6, 6);
     }
 
-    // Antenna (same for all)
+    // Antenna
     ctx.fillStyle = '#AAAAAA';
     ctx.fillRect(bodyX + bodyW / 2 - 1, bodyY - 14, 2, 6);
     ctx.beginPath();
@@ -1277,6 +1291,8 @@ function drawDeathScreen() {
 
   ctx.font = '16px sans-serif';
   ctx.fillStyle = '#CCCCCC';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
   ctx.fillText('Up/Down: Move | Enter: Select | R: Quick Restart', canvas.width / 2, canvas.height - 40);
 }
 
@@ -1295,9 +1311,15 @@ function drawSkinsMenu() {
 
   const startY = 150;
   const lineHeight = 60;
-  for (let i = 0; i < skins.length; i++) {
+
+  const startIndex = skinsScrollOffset;
+  const endIndex = Math.min(skins.length, skinsScrollOffset + SKINS_VISIBLE_COUNT);
+
+  for (let i = startIndex; i < endIndex; i++) {
     const skin = skins[i];
-    const y = startY + i * lineHeight;
+    const row = i - startIndex;
+    const y = startY + row * lineHeight;
+
     if (i === skinsMenuSelection) {
       ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
       roundedRect(ctx, canvas.width / 2 - 200, y - 25, 400, 50, 10);
@@ -1319,11 +1341,24 @@ function drawSkinsMenu() {
     ctx.fillText(`${skin.name} ${status}`, canvas.width / 2 - 130, y);
   }
 
+  if (skinsScrollOffset > 0) {
+    ctx.fillStyle = '#CCCCCC';
+    ctx.font = '14px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('▲ more skins', canvas.width / 2, startY - 20);
+  }
+  if (skinsScrollOffset + SKINS_VISIBLE_COUNT < skins.length) {
+    ctx.fillStyle = '#CCCCCC';
+    ctx.font = '14px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('▼ more skins', canvas.width / 2, startY + SKINS_VISIBLE_COUNT * lineHeight);
+  }
+
   ctx.textAlign = 'center';
   ctx.fillStyle = '#CCCCCC';
   ctx.font = '18px sans-serif';
   ctx.fillText(
-    'Arrow Up/Down: Select | ENTER: Buy/Equip | ESC: Back',
+    'Arrow Up/Down: Scroll | ENTER: Buy/Equip | ESC: Back',
     canvas.width / 2,
     canvas.height - 40
   );
