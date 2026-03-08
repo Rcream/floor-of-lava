@@ -807,12 +807,26 @@ function update() {
 }
 
 function drawBackgroundAndPlatforms() {
-  ctx.fillStyle = '#87CEEB';
+  // factory sky
+  ctx.fillStyle = '#2b2f3b';
   ctx.fillRect(0, 0, canvas.width, SKY_HEIGHT);
 
-  ctx.fillStyle = '#228B22';
+  // distant factory silhouettes
+  ctx.fillStyle = '#1f2229';
+  for (let i = 0; i < canvas.width; i += 180) {
+    const w = 120;
+    const h = 80;
+    const x = i + 40;
+    const y = SKY_HEIGHT - h - 40;
+    ctx.fillRect(x, y, w, h);
+    ctx.fillRect(x + 20, y - 30, 16, 30); // chimney
+  }
+
+  // top ledge above lava (metal)
+  ctx.fillStyle = '#3b3f48';
   ctx.fillRect(0, SKY_HEIGHT, canvas.width, 15);
 
+  // keep your original lava
   ctx.fillStyle = '#FF4500';
   ctx.fillRect(0, VISUAL_LAVA_Y, canvas.width, canvas.height - VISUAL_LAVA_Y);
 
@@ -829,6 +843,7 @@ function drawBackgroundAndPlatforms() {
     ctx.fill();
   }
 
+  // platforms: rusty balloons, metal/catwalk normals
   for (let plat of platforms) {
     if (plat.type === 'balloon') {
       if (plat.popped) continue;
@@ -836,14 +851,20 @@ function drawBackgroundAndPlatforms() {
       const shakeAmount = shakePhase > 0 ? 2 : 0;
       const sx = shakeAmount ? (Math.random() - 0.5) * shakeAmount : 0;
       const sy = shakeAmount ? (Math.random() - 0.5) * shakeAmount : 0;
-      ctx.fillStyle = '#ADD8E6';
+      ctx.fillStyle = '#6b4a3c';      // rusty metal
       ctx.fillRect(plat.x + sx, plat.y + sy, plat.width, plat.height);
-      ctx.strokeStyle = '#FFFFFF';
+      ctx.strokeStyle = '#c27b48';
       ctx.lineWidth = 2;
       ctx.strokeRect(plat.x + sx, plat.y + sy, plat.width, plat.height);
     } else {
-      ctx.fillStyle = plat.moving ? '#A0522D' : '#8B4513';
+      // normal platforms: metal beams / conveyors
+      ctx.fillStyle = plat.moving ? '#555b66' : '#4a4f59';
       ctx.fillRect(plat.x, plat.y, plat.width, plat.height);
+
+      if (plat.moving) {
+        ctx.fillStyle = '#ffcc33';
+        ctx.fillRect(plat.x, plat.y + 6, plat.width, 4); // conveyor stripe
+      }
     }
   }
 }
@@ -979,7 +1000,7 @@ function drawHUD() {
   }
 }
 
-// Skin‑aware robot with 5 skins and no outline
+// Skin‑aware robot with 5 skins
 function drawPlayerAndWarnings() {
   if (gameState === 'playing' || gameState === 'paused' || gameState === 'countdown') {
     const bodyX = player.x;
@@ -1026,7 +1047,7 @@ function drawPlayerAndWarnings() {
       ctx.fillRect(bodyX + 4, bodyY + 2, 3, 3);
       ctx.fillRect(bodyX + 8, bodyY + 2, 3, 3);
     } else if (skin.id === 3) {
-      // Hazmat Bot
+      // Hazmat Engineer: yellow hazard suit
       ctx.fillStyle = '#FFD800';
       ctx.fillRect(bodyX, bodyY + 5, bodyW, bodyH - 5);
       ctx.fillStyle = '#FFE866';
@@ -1038,7 +1059,7 @@ function drawPlayerAndWarnings() {
       ctx.fillStyle = '#FFCC00';
       ctx.fillRect(bodyX, bodyY + bodyH - 8, bodyW, 2);
     } else if (skin.id === 4) {
-      // Shadow Bot
+      // Shadow Bot: dark with purple glow
       ctx.fillStyle = '#111122';
       ctx.fillRect(bodyX, bodyY + 5, bodyW, bodyH - 5);
       ctx.fillStyle = '#222244';
@@ -1066,8 +1087,6 @@ function drawPlayerAndWarnings() {
     ctx.fillStyle = '#555555';
     ctx.fillRect(bodyX + 4, bodyY + bodyH - 5, 6, 8);
     ctx.fillRect(bodyX + bodyW - 10, bodyY + bodyH - 5, 6, 8);
-
-    // (outline removed here)
 
     if (gameState === 'playing' && player.y + player.height > DEATH_LAVA_Y - 60) {
       const barY = 65;
