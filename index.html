@@ -32,8 +32,8 @@
         Arrows or WASD: Move/Jump | Fall off = DEAD | ENTER: Start/Select | U: Upgrades | C: Skins | R: Restart | P: Pause
     </div>
     <canvas id="gameCanvas" width="800" height="400"></canvas>
-    <script>
-       const canvas = document.getElementById('gameCanvas');
+   <script>
+const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
 function roundedRect(ctx, x, y, width, height, radius) {
@@ -58,7 +58,7 @@ const DEATH_LAVA_Y = 400;
 // Game states: 'menu', 'countdown', 'playing', 'paused', 'dead', 'upgrades', 'skins', 'levelInfo'
 let gameState = 'menu';
 let countdownValue = 0;
-let countdownTimer = 3;
+let countdownTimer = 0;
 
 let deathCount = 0;
 
@@ -67,14 +67,14 @@ let highScore = 0;
 let coins = 0;
 let currentPlatformId = null;
 
-// jumpLevel still exists for upgrades UI, but no longer affects physics
+// jumpLevel kept for old data, but unused in physics
 let jumpLevel = 0;
 let coinMultiplier = 1;
 let magnetLevel = 0;
 let hasSecondChance = false;
 let usedSecondChanceThisRun = false;
 
-// FIXED jump force instead of multiplier
+// Fixed jump force
 const JUMP_FORCE = 14;
 
 let totalXP = 0;
@@ -89,7 +89,8 @@ function handleLevelUps() {
     totalXP -= xpNeededForNextLevel();
     playerLevel++;
     if (playerLevel === 2) {
-      jumpLevel += 1; // cosmetic only now
+      // previously increased jump; now cosmetic only
+      jumpLevel += 1;
     } else if (playerLevel === 3) {
       baseSpeedBoost += 0.2;
     } else if (playerLevel === 4) {
@@ -403,7 +404,8 @@ let mainMenuSelection = 0;
 const mainMenuItems = ['Start Run', 'Upgrades', 'Skins', 'Level Info'];
 
 let upgradesMenuSelection = 0;
-const upgradesItems = ['Jump Multiplier', 'Coin Multiplier', 'Magnet', 'Second Chance'];
+// Jump Multiplier removed from list:
+const upgradesItems = ['Coin Multiplier', 'Magnet', 'Second Chance'];
 
 let pauseMenuSelection = 0;
 let deathMenuSelection = 0;
@@ -455,13 +457,8 @@ window.addEventListener('keydown', (e) => {
     }
     if (e.code === 'Enter') {
       const item = upgradesItems[upgradesMenuSelection];
-      if (item === 'Jump Multiplier') {
-        const cost = 10;
-        if (coins >= cost) {
-          coins -= cost;
-          jumpLevel += 1; // cosmetic only
-        }
-      } else if (item === 'Coin Multiplier') {
+      // Jump Multiplier branch removed – only these three remain:
+      if (item === 'Coin Multiplier') {
         const cost = 20;
         if (coins >= cost && coinMultiplier < 2) {
           coins -= cost;
@@ -611,11 +608,11 @@ function resetPlayerAndPlatforms() {
   resetMissionForNewRun();
 }
 
-// UPDATED: startGame now starts countdown
+// startGame / restart use countdown
 function startGame() {
   resetPlayerAndPlatforms();
   countdownValue = 3;
-  countdownTimer = 60; // ~1 second per frame at 60fps
+  countdownTimer = 60;
   gameState = 'countdown';
 }
 
@@ -649,9 +646,7 @@ function spawnPlatform() {
   if (Math.random() < 0.4) addCoinOnPlatform(plat);
 }
 
-// UPDATED update(): use JUMP_FORCE, add countdown handling
 function update() {
-  // countdown state: only timer, no controls
   if (gameState === 'countdown') {
     countdownTimer--;
     if (countdownTimer <= 0) {
@@ -670,7 +665,6 @@ function update() {
   if (keys['ArrowLeft'] || keys['KeyA']) player.x -= player.speed;
   if (keys['ArrowRight'] || keys['KeyD']) player.x += player.speed;
 
-  // FIX: remove jump multiplier, use constant JUMP_FORCE
   if ((keys['ArrowUp'] || keys['Space'] || keys['KeyW']) && player.grounded) {
     player.velY = -JUMP_FORCE;
     player.jumping = true;
@@ -1089,13 +1083,13 @@ function drawUpgradesMenu() {
     ctx.font = '20px sans-serif';
     ctx.textAlign = 'left';
     ctx.textBaseline = 'middle';
-    if (upgradesItems[i] === 'Jump Multiplier') {
-      ctx.fillText(`Jump Multiplier (Level: ${jumpLevel}) Cost: 10`, canvas.width / 2 - 240, y);
-    } else if (upgradesItems[i] === 'Coin Multiplier') {
+
+    const item = upgradesItems[i];
+    if (item === 'Coin Multiplier') {
       ctx.fillText(`Coin Multiplier (x${coinMultiplier}) Cost: 20`, canvas.width / 2 - 240, y);
-    } else if (upgradesItems[i] === 'Magnet') {
+    } else if (item === 'Magnet') {
       ctx.fillText(`Magnet (Level: ${magnetLevel}) Cost: 15`, canvas.width / 2 - 240, y);
-    } else if (upgradesItems[i] === 'Second Chance') {
+    } else if (item === 'Second Chance') {
       ctx.fillText(
         `Second Chance (${hasSecondChance ? 'OWNED' : 'Not owned'}) Cost: 25 (Req: Lvl 4)`,
         canvas.width / 2 - 240,
@@ -1140,7 +1134,7 @@ function drawLevelInfoMenu() {
   ctx.textBaseline = 'top';
   let textX = panelX + 20;
   let textY = panelY + 20;
-  ctx.fillText('Lv 2: +1 Jump Level (permanent, now cosmetic)', textX, textY);
+  ctx.fillText('Lv 2: (old jump upgrade now cosmetic)', textX, textY);
   textY += 24;
   ctx.fillText('Lv 3: +0.2 Base Speed (permanent)', textX, textY);
   textY += 24;
@@ -1300,6 +1294,6 @@ function gameLoop() {
 
 resetMissionForNewRun();
 gameLoop();
-    </script>
+</script>
 </body>
 </html>
