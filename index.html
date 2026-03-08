@@ -128,10 +128,10 @@ const player = {
 // Skins
 const skins = [
   { id: 0, name: 'Default Bot', color: '#4169E1', cost: 0, unlocked: true },
-  { id: 1, name: 'Angry Bot',     color: '#FF4444', cost: 20, unlocked: false },
-  { id: 2, name: 'Dino Bot', color: '#22AA55', cost: 30, unlocked: false },
-  { id: 3, name: 'Hazmat Bot',   color: '#FFD800', cost: 40, unlocked: false },
-  { id: 4, name: 'Shadow Bot',   color: '#4B0082', cost: 50, unlocked: false }
+  { id: 1, name: 'Angry Bot',   color: '#FF4444', cost: 20, unlocked: false },
+  { id: 2, name: 'Dino Bot',    color: '#22AA55', cost: 30, unlocked: false },
+  { id: 3, name: 'Hazmat Bot',  color: '#FFD800', cost: 40, unlocked: false },
+  { id: 4, name: 'Shadow Bot',  color: '#4B0082', cost: 50, unlocked: false }
 ];
 let selectedSkinIndex = 0;
 let skinsMenuSelection = 0;
@@ -210,8 +210,8 @@ addCoinOnPlatform(platforms[3]);
 // Missions
 const missions = [
   { type: 0, target: 15, text: 'Land on 15 platforms in one run' },
-  { type: 1, target: 5,  text: 'Collect 5 coins in one run' },
-  { type: 2, target: 3,  text: 'Reach speed level 3' }
+  { type: 1, target: 5, text: 'Collect 5 coins in one run' },
+  { type: 2, target: 3, text: 'Reach speed level 3' }
 ];
 let currentMissionIndex = 0;
 let missionProgress = 0;
@@ -979,7 +979,7 @@ function drawHUD() {
   }
 }
 
-// Skin‑aware robot with 5 skins
+// Skin‑aware robot with 5 skins and no outline
 function drawPlayerAndWarnings() {
   if (gameState === 'playing' || gameState === 'paused' || gameState === 'countdown') {
     const bodyX = player.x;
@@ -1026,7 +1026,7 @@ function drawPlayerAndWarnings() {
       ctx.fillRect(bodyX + 4, bodyY + 2, 3, 3);
       ctx.fillRect(bodyX + 8, bodyY + 2, 3, 3);
     } else if (skin.id === 3) {
-      // Hazmat Engineer: yellow hazard suit
+      // Hazmat Bot
       ctx.fillStyle = '#FFD800';
       ctx.fillRect(bodyX, bodyY + 5, bodyW, bodyH - 5);
       ctx.fillStyle = '#FFE866';
@@ -1038,7 +1038,7 @@ function drawPlayerAndWarnings() {
       ctx.fillStyle = '#FFCC00';
       ctx.fillRect(bodyX, bodyY + bodyH - 8, bodyW, 2);
     } else if (skin.id === 4) {
-      // Shadow Bot: dark with purple glow
+      // Shadow Bot
       ctx.fillStyle = '#111122';
       ctx.fillRect(bodyX, bodyY + 5, bodyW, bodyH - 5);
       ctx.fillStyle = '#222244';
@@ -1067,10 +1067,7 @@ function drawPlayerAndWarnings() {
     ctx.fillRect(bodyX + 4, bodyY + bodyH - 5, 6, 8);
     ctx.fillRect(bodyX + bodyW - 10, bodyY + bodyH - 5, 6, 8);
 
-    // Outline
-    ctx.strokeStyle = '#000000';
-    ctx.lineWidth = 2;
-    ctx.strokeRect(bodyX, bodyY, bodyW, bodyH);
+    // (outline removed here)
 
     if (gameState === 'playing' && player.y + player.height > DEATH_LAVA_Y - 60) {
       const barY = 65;
