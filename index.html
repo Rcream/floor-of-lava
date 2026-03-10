@@ -806,27 +806,86 @@ function update() {
   updateMissionsEachFrame();
 }
 
+// DARK CONVEYOR HALL BACKGROUND
 function drawBackgroundAndPlatforms() {
-  // factory sky
-  ctx.fillStyle = '#2b2f3b';
+  // Dark industrial background
+  ctx.fillStyle = '#14161c';
   ctx.fillRect(0, 0, canvas.width, SKY_HEIGHT);
 
-  // distant factory silhouettes
-  ctx.fillStyle = '#1f2229';
-  for (let i = 0; i < canvas.width; i += 180) {
-    const w = 120;
-    const h = 80;
-    const x = i + 40;
-    const y = SKY_HEIGHT - h - 40;
-    ctx.fillRect(x, y, w, h);
-    ctx.fillRect(x + 20, y - 30, 16, 30); // chimney
+  // Far background diagonal conveyors (faint)
+  ctx.strokeStyle = '#262a33';
+  ctx.lineWidth = 10;
+  for (let i = -200; i < canvas.width + 200; i += 220) {
+    ctx.beginPath();
+    ctx.moveTo(i, SKY_HEIGHT - 260);
+    ctx.lineTo(i + 260, SKY_HEIGHT - 80);
+    ctx.stroke();
   }
 
-  // top ledge above lava (metal)
+  // Mid background conveyors, some reversed angle
+  ctx.strokeStyle = '#323643';
+  ctx.lineWidth = 14;
+  for (let i = -250; i < canvas.width + 250; i += 260) {
+    ctx.beginPath();
+    ctx.moveTo(i + 260, SKY_HEIGHT - 220);
+    ctx.lineTo(i, SKY_HEIGHT - 40);
+    ctx.stroke();
+  }
+
+  // Horizontal conveyors at different heights
+  ctx.strokeStyle = '#3b404d';
+  ctx.lineWidth = 12;
+  const beltYs = [SKY_HEIGHT - 190, SKY_HEIGHT - 140, SKY_HEIGHT - 90];
+  for (let y of beltYs) {
+    ctx.beginPath();
+    ctx.moveTo(-100, y);
+    ctx.lineTo(canvas.width + 100, y);
+    ctx.stroke();
+  }
+
+  // Belt rollers (small circles along some belts)
+  ctx.fillStyle = '#1f222a';
+  for (let x = -40; x < canvas.width + 40; x += 80) {
+    ctx.beginPath();
+    ctx.arc(x, SKY_HEIGHT - 190, 8, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(x + 40, SKY_HEIGHT - 140, 7, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // Vertical support beams
+  ctx.fillStyle = '#20242d';
+  for (let i = 40; i < canvas.width; i += 160) {
+    ctx.fillRect(i, SKY_HEIGHT - 260, 10, 260);
+  }
+
+  // Warning stripes on a few beams
+  ctx.save();
+  ctx.fillStyle = '#ffcc33';
+  for (let i = 40; i < canvas.width; i += 320) {
+    for (let y = SKY_HEIGHT - 80; y < SKY_HEIGHT; y += 16) {
+      ctx.save();
+      ctx.translate(i, y);
+      ctx.rotate(-Math.PI / 6);
+      ctx.fillRect(-8, -4, 24, 8);
+      ctx.restore();
+    }
+  }
+  ctx.restore();
+
+  // Foreground pipes near the lava
+  ctx.fillStyle = '#323643';
+  for (let i = 60; i < canvas.width; i += 220) {
+    ctx.fillRect(i, SKY_HEIGHT - 40, 14, 40);
+    ctx.fillRect(i - 12, SKY_HEIGHT - 42, 38, 6);
+  }
+
+  // Top ledge above lava
   ctx.fillStyle = '#3b3f48';
   ctx.fillRect(0, SKY_HEIGHT, canvas.width, 15);
 
-  // keep your original lava
+  // Lava (unchanged)
   ctx.fillStyle = '#FF4500';
   ctx.fillRect(0, VISUAL_LAVA_Y, canvas.width, canvas.height - VISUAL_LAVA_Y);
 
@@ -843,7 +902,7 @@ function drawBackgroundAndPlatforms() {
     ctx.fill();
   }
 
-  // platforms: rusty balloons, metal/catwalk normals
+  // Platforms: rusty balloons, metal/conveyor normals
   for (let plat of platforms) {
     if (plat.type === 'balloon') {
       if (plat.popped) continue;
@@ -851,19 +910,18 @@ function drawBackgroundAndPlatforms() {
       const shakeAmount = shakePhase > 0 ? 2 : 0;
       const sx = shakeAmount ? (Math.random() - 0.5) * shakeAmount : 0;
       const sy = shakeAmount ? (Math.random() - 0.5) * shakeAmount : 0;
-      ctx.fillStyle = '#6b4a3c';      // rusty metal
+      ctx.fillStyle = '#6b4a3c';
       ctx.fillRect(plat.x + sx, plat.y + sy, plat.width, plat.height);
       ctx.strokeStyle = '#c27b48';
       ctx.lineWidth = 2;
       ctx.strokeRect(plat.x + sx, plat.y + sy, plat.width, plat.height);
     } else {
-      // normal platforms: metal beams / conveyors
       ctx.fillStyle = plat.moving ? '#555b66' : '#4a4f59';
       ctx.fillRect(plat.x, plat.y, plat.width, plat.height);
 
       if (plat.moving) {
         ctx.fillStyle = '#ffcc33';
-        ctx.fillRect(plat.x, plat.y + 6, plat.width, 4); // conveyor stripe
+        ctx.fillRect(plat.x, plat.y + 6, plat.width, 4);
       }
     }
   }
