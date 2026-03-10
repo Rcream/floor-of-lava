@@ -1337,7 +1337,7 @@ function drawUpgradesMenu() {
       ctx.fillText(`Magnet (Level: ${magnetLevel}) Cost: 15`, canvas.width / 2 - 240, y);
     } else if (item === 'Second Chance') {
       ctx.fillText(
-        `Second Chance (${hasSecondChance ? 'OWNED' : 'Not owned'}) Cost: 25 (Req: Lvl 4)`,
+        `Second Chance (Req: Lvl 4)` + ` (${hasSecondChance ? 'OWNED' : 'Not owned'})`,
         canvas.width / 2 - 240,
         y
       );
