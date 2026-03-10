@@ -138,7 +138,7 @@ let skinsMenuSelection = 0;
 let skinsScrollOffset = 0;
 const SKINS_VISIBLE_COUNT = 4;
 
-// Balloon / fragile platforms
+// Fragile platforms
 const BALLOON_STAND_TIME = 45;
 const BALLOON_SHAKE_TIME = 20;
 
@@ -806,13 +806,13 @@ function update() {
   updateMissionsEachFrame();
 }
 
-// DARK CONVEYOR HALL BACKGROUND
+// DARK CONVEYOR HALL BACKGROUND + NEW LAVA
 function drawBackgroundAndPlatforms() {
   // Dark industrial background
   ctx.fillStyle = '#14161c';
   ctx.fillRect(0, 0, canvas.width, SKY_HEIGHT);
 
-  // Far background diagonal conveyors (faint)
+  // Far background diagonal conveyors
   ctx.strokeStyle = '#262a33';
   ctx.lineWidth = 10;
   for (let i = -200; i < canvas.width + 200; i += 220) {
@@ -822,7 +822,7 @@ function drawBackgroundAndPlatforms() {
     ctx.stroke();
   }
 
-  // Mid background conveyors, some reversed angle
+  // Mid background conveyors
   ctx.strokeStyle = '#323643';
   ctx.lineWidth = 14;
   for (let i = -250; i < canvas.width + 250; i += 260) {
@@ -832,7 +832,7 @@ function drawBackgroundAndPlatforms() {
     ctx.stroke();
   }
 
-  // Horizontal conveyors at different heights
+  // Horizontal conveyors
   ctx.strokeStyle = '#3b404d';
   ctx.lineWidth = 12;
   const beltYs = [SKY_HEIGHT - 190, SKY_HEIGHT - 140, SKY_HEIGHT - 90];
@@ -843,7 +843,7 @@ function drawBackgroundAndPlatforms() {
     ctx.stroke();
   }
 
-  // Belt rollers (small circles along some belts)
+  // Belt rollers
   ctx.fillStyle = '#1f222a';
   for (let x = -40; x < canvas.width + 40; x += 80) {
     ctx.beginPath();
@@ -860,7 +860,7 @@ function drawBackgroundAndPlatforms() {
     ctx.fillRect(i, SKY_HEIGHT - 260, 10, 260);
   }
 
-  // Warning stripes on a few beams
+  // Warning stripes on beams
   ctx.save();
   ctx.fillStyle = '#ffcc33';
   for (let i = 40; i < canvas.width; i += 320) {
@@ -874,7 +874,7 @@ function drawBackgroundAndPlatforms() {
   }
   ctx.restore();
 
-  // Foreground pipes near the lava
+  // Foreground pipes
   ctx.fillStyle = '#323643';
   for (let i = 60; i < canvas.width; i += 220) {
     ctx.fillRect(i, SKY_HEIGHT - 40, 14, 40);
@@ -885,24 +885,35 @@ function drawBackgroundAndPlatforms() {
   ctx.fillStyle = '#3b3f48';
   ctx.fillRect(0, SKY_HEIGHT, canvas.width, 15);
 
-  // Lava (unchanged)
+  // Base lava
   ctx.fillStyle = '#FF4500';
   ctx.fillRect(0, VISUAL_LAVA_Y, canvas.width, canvas.height - VISUAL_LAVA_Y);
 
-  ctx.fillStyle = '#FF6347';
-  for (let i = 0; i < canvas.width; i += 40) {
+  // Dark crust band
+  ctx.fillStyle = '#992300';
+  ctx.fillRect(0, VISUAL_LAVA_Y, canvas.width, 10);
+
+  // Hot inner glow band
+  ctx.fillStyle = '#FF7A1A';
+  for (let i = 0; i < canvas.width; i += 30) {
     ctx.beginPath();
-    ctx.arc(
-      i,
-      VISUAL_LAVA_Y + 5 + Math.sin(i * 0.01 + Date.now() * 0.001) * 3,
-      8,
-      0,
-      Math.PI * 2
-    );
+    const waveY =
+      VISUAL_LAVA_Y + 8 + Math.sin(i * 0.03 + Date.now() * 0.002) * 3;
+    ctx.arc(i, waveY, 10, 0, Math.PI * 2);
     ctx.fill();
   }
 
-  // Platforms: fragile hazard (old balloon) + normal metal
+  // Deeper red band just below
+  ctx.fillStyle = '#CC3300';
+  for (let i = 15; i < canvas.width; i += 35) {
+    ctx.beginPath();
+    const waveY =
+      VISUAL_LAVA_Y + 18 + Math.cos(i * 0.025 + Date.now() * 0.0015) * 3;
+    ctx.arc(i, waveY, 9, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // Platforms
   for (let plat of platforms) {
     if (plat.type === 'balloon') {
       if (plat.popped) continue;
@@ -919,7 +930,7 @@ function drawBackgroundAndPlatforms() {
       ctx.fillStyle = '#30333c';
       ctx.fillRect(x, y, plat.width, plat.height);
 
-      // hazard stripe band on front edge
+      // hazard stripe band
       ctx.fillStyle = '#ffcc33';
       ctx.fillRect(x, y + plat.height - 5, plat.width, 5);
       ctx.fillStyle = '#20242d';
@@ -933,53 +944,51 @@ function drawBackgroundAndPlatforms() {
         ctx.fill();
       }
 
-      // crack lines to show it's weak (more cracks)
-ctx.strokeStyle = '#50545f';
-ctx.lineWidth = 1;
+      // crack lines (extra)
+      ctx.strokeStyle = '#50545f';
+      ctx.lineWidth = 1;
 
-// main left crack
-ctx.beginPath();
-ctx.moveTo(x + 6, y + 4);
-ctx.lineTo(x + 18, y + 8);
-ctx.lineTo(x + 26, y + 5);
-ctx.stroke();
+      // main left crack
+      ctx.beginPath();
+      ctx.moveTo(x + 6, y + 4);
+      ctx.lineTo(x + 18, y + 8);
+      ctx.lineTo(x + 26, y + 5);
+      ctx.stroke();
 
-// main right crack
-ctx.beginPath();
-ctx.moveTo(x + plat.width - 24, y + 3);
-ctx.lineTo(x + plat.width - 12, y + 8);
-ctx.stroke();
+      // main right crack
+      ctx.beginPath();
+      ctx.moveTo(x + plat.width - 24, y + 3);
+      ctx.lineTo(x + plat.width - 12, y + 8);
+      ctx.stroke();
 
-// extra small cracks
-ctx.beginPath();
-ctx.moveTo(x + plat.width * 0.3, y + 3);
-ctx.lineTo(x + plat.width * 0.3 + 6, y + 7);
-ctx.stroke();
+      // extra small cracks
+      ctx.beginPath();
+      ctx.moveTo(x + plat.width * 0.3, y + 3);
+      ctx.lineTo(x + plat.width * 0.3 + 6, y + 7);
+      ctx.stroke();
 
-ctx.beginPath();
-ctx.moveTo(x + plat.width * 0.55, y + 5);
-ctx.lineTo(x + plat.width * 0.55 + 5, y + 9);
-ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(x + plat.width * 0.55, y + 5);
+      ctx.lineTo(x + plat.width * 0.55 + 5, y + 9);
+      ctx.stroke();
 
-ctx.beginPath();
-ctx.moveTo(x + plat.width * 0.7, y + 2);
-ctx.lineTo(x + plat.width * 0.7 + 7, y + 6);
-ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(x + plat.width * 0.7, y + 2);
+      ctx.lineTo(x + plat.width * 0.7 + 7, y + 6);
+      ctx.stroke();
 
-ctx.beginPath();
-ctx.moveTo(x + plat.width * 0.15, y + 7);
-ctx.lineTo(x + plat.width * 0.15 + 5, y + 11);
-ctx.stroke();
-
-      } else {
+      ctx.beginPath();
+      ctx.moveTo(x + plat.width * 0.15, y + 7);
+      ctx.lineTo(x + plat.width * 0.15 + 5, y + 11);
+      ctx.stroke();
+    } else {
+      // solid version: same but no cracks
       const x = plat.x;
       const y = plat.y;
 
-      // same metal base as fragile platform
       ctx.fillStyle = '#30333c';
       ctx.fillRect(x, y, plat.width, plat.height);
 
-      // same hazard stripe band
       ctx.fillStyle = '#ffcc33';
       ctx.fillRect(x, y + plat.height - 5, plat.width, 5);
       ctx.fillStyle = '#20242d';
@@ -992,9 +1001,7 @@ ctx.stroke();
         ctx.closePath();
         ctx.fill();
       }
-
-      // no cracks here – solid version
-  }
+    }
   }
 }
 
@@ -1037,6 +1044,7 @@ function drawHUD() {
   roundedRect(ctx, xpBarX, xpBarY, xpBarWidth, xpBarHeight, 5);
   ctx.fill();
 
+  // XP fill matches mission bar green
   ctx.fillStyle = '#4CAF50';
   roundedRect(ctx, xpBarX, xpBarY, xpBarWidth * xpProgress, xpBarHeight, 5);
   ctx.fill();
@@ -1129,7 +1137,7 @@ function drawHUD() {
   }
 }
 
-// Skin‑aware robot with 5 skins
+// Player
 function drawPlayerAndWarnings() {
   if (gameState === 'playing' || gameState === 'paused' || gameState === 'countdown') {
     const bodyX = player.x;
@@ -1140,7 +1148,6 @@ function drawPlayerAndWarnings() {
     const skin = skins[selectedSkinIndex];
 
     if (skin.id === 0) {
-      // Default: normal grey robot
       ctx.fillStyle = '#666666';
       ctx.fillRect(bodyX, bodyY + 5, bodyW, bodyH - 5);
       ctx.fillStyle = '#888888';
@@ -1149,7 +1156,6 @@ function drawPlayerAndWarnings() {
       ctx.fillRect(bodyX + 7, bodyY - 4, 4, 4);
       ctx.fillRect(bodyX + bodyW - 11, bodyY - 4, 4, 4);
     } else if (skin.id === 1) {
-      // Red: angry red robot
       ctx.fillStyle = '#AA0000';
       ctx.fillRect(bodyX, bodyY + 5, bodyW, bodyH - 5);
       ctx.fillStyle = '#CC2222';
@@ -1163,7 +1169,6 @@ function drawPlayerAndWarnings() {
       ctx.lineTo(bodyX + bodyW - 10, bodyY - 4);
       ctx.stroke();
     } else if (skin.id === 2) {
-      // Green: dinosaur robot
       ctx.fillStyle = '#1f8a3b';
       ctx.fillRect(bodyX, bodyY + 5, bodyW, bodyH - 5);
       ctx.fillStyle = '#2cab4a';
@@ -1176,7 +1181,6 @@ function drawPlayerAndWarnings() {
       ctx.fillRect(bodyX + 4, bodyY + 2, 3, 3);
       ctx.fillRect(bodyX + 8, bodyY + 2, 3, 3);
     } else if (skin.id === 3) {
-      // Hazmat Engineer: yellow hazard suit
       ctx.fillStyle = '#FFD800';
       ctx.fillRect(bodyX, bodyY + 5, bodyW, bodyH - 5);
       ctx.fillStyle = '#FFE866';
@@ -1188,7 +1192,6 @@ function drawPlayerAndWarnings() {
       ctx.fillStyle = '#FFCC00';
       ctx.fillRect(bodyX, bodyY + bodyH - 8, bodyW, 2);
     } else if (skin.id === 4) {
-      // Shadow Bot: dark with purple glow
       ctx.fillStyle = '#111122';
       ctx.fillRect(bodyX, bodyY + 5, bodyW, bodyH - 5);
       ctx.fillStyle = '#222244';
@@ -1200,19 +1203,16 @@ function drawPlayerAndWarnings() {
       ctx.fillRect(bodyX + bodyW / 2 - 3, bodyY + 10, 6, 6);
     }
 
-    // Antenna
     ctx.fillStyle = '#AAAAAA';
     ctx.fillRect(bodyX + bodyW / 2 - 1, bodyY - 14, 2, 6);
     ctx.beginPath();
     ctx.arc(bodyX + bodyW / 2, bodyY - 16, 2, 0, Math.PI * 2);
     ctx.fill();
 
-    // Arms
     ctx.fillStyle = '#777777';
     ctx.fillRect(bodyX - 4, bodyY + 12, 4, 10);
     ctx.fillRect(bodyX + bodyW, bodyY + 12, 4, 10);
 
-    // Legs
     ctx.fillStyle = '#555555';
     ctx.fillRect(bodyX + 4, bodyY + bodyH - 5, 6, 8);
     ctx.fillRect(bodyX + bodyW - 10, bodyY + bodyH - 5, 6, 8);
