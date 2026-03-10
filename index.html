@@ -127,11 +127,11 @@ const player = {
 
 // Skins
 const skins = [
-  { id: 0, name: 'Default Bot', color: '#4169E1', cost: 0, unlocked: true },
+  { id: 0, name: 'Default Bot', color: '#7d7d7d', cost: 0, unlocked: true },
   { id: 1, name: 'Angry Bot',   color: '#FF4444', cost: 10, unlocked: false },
   { id: 2, name: 'Dino Bot',    color: '#22AA55', cost: 10, unlocked: false },
   { id: 3, name: 'Hazmat Bot',  color: '#FFD800', cost: 10, unlocked: false },
-  { id: 4, name: 'Shadow Bot',  color: '#4B0082', cost: 10, unlocked: false }
+  { id: 4, name: 'Rust Bot',  color: '#B85C2D', cost: 10, unlocked: false }
 ];
 let selectedSkinIndex = 0;
 let skinsMenuSelection = 0;
@@ -1192,16 +1192,26 @@ function drawPlayerAndWarnings() {
       ctx.fillStyle = '#FFCC00';
       ctx.fillRect(bodyX, bodyY + bodyH - 8, bodyW, 2);
     } else if (skin.id === 4) {
-      ctx.fillStyle = '#111122';
-      ctx.fillRect(bodyX, bodyY + 5, bodyW, bodyH - 5);
-      ctx.fillStyle = '#222244';
-      ctx.fillRect(bodyX + 4, bodyY - 8, bodyW - 8, 12);
-      ctx.fillStyle = '#C000FF';
-      ctx.fillRect(bodyX + 7, bodyY - 4, 4, 4);
-      ctx.fillRect(bodyX + bodyW - 11, bodyY - 4, 4, 4);
-      ctx.fillStyle = '#C000FF';
-      ctx.fillRect(bodyX + bodyW / 2 - 3, bodyY + 10, 6, 6);
-    }
+  // Rust Bot: worn metal with rust patches
+  // torso
+  ctx.fillStyle = '#7A4A25';
+  ctx.fillRect(bodyX, bodyY + 5, bodyW, bodyH - 5);
+
+  // head
+  ctx.fillStyle = '#B85C2D';
+  ctx.fillRect(bodyX + 4, bodyY - 8, bodyW - 8, 12);
+
+  // eyes (dull orange)
+  ctx.fillStyle = '#FFB347';
+  ctx.fillRect(bodyX + 7, bodyY - 4, 3, 3);
+  ctx.fillRect(bodyX + bodyW - 10, bodyY - 4, 3, 3);
+
+  // rust patches
+  ctx.fillStyle = '#5A3318';
+  ctx.fillRect(bodyX + 3, bodyY + 10, 5, 4);
+  ctx.fillRect(bodyX + bodyW - 8, bodyY + 16, 4, 5);
+  ctx.fillRect(bodyX + 10, bodyY + bodyH - 10, 6, 3);
+}
 
     ctx.fillStyle = '#AAAAAA';
     ctx.fillRect(bodyX + bodyW / 2 - 1, bodyY - 14, 2, 6);
