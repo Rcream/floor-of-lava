@@ -138,7 +138,7 @@ let skinsMenuSelection = 0;
 let skinsScrollOffset = 0;
 const SKINS_VISIBLE_COUNT = 4;
 
-// Balloon platforms
+// Balloon / fragile platforms
 const BALLOON_STAND_TIME = 45;
 const BALLOON_SHAKE_TIME = 20;
 
@@ -902,28 +902,99 @@ function drawBackgroundAndPlatforms() {
     ctx.fill();
   }
 
-  // Platforms: rusty balloons, metal/conveyor normals
+  // Platforms: fragile hazard (old balloon) + normal metal
   for (let plat of platforms) {
     if (plat.type === 'balloon') {
       if (plat.popped) continue;
+
       const shakePhase = Math.max(0, plat.standTime - (BALLOON_STAND_TIME - BALLOON_SHAKE_TIME));
       const shakeAmount = shakePhase > 0 ? 2 : 0;
       const sx = shakeAmount ? (Math.random() - 0.5) * shakeAmount : 0;
       const sy = shakeAmount ? (Math.random() - 0.5) * shakeAmount : 0;
-      ctx.fillStyle = '#6b4a3c';
-      ctx.fillRect(plat.x + sx, plat.y + sy, plat.width, plat.height);
-      ctx.strokeStyle = '#c27b48';
-      ctx.lineWidth = 2;
-      ctx.strokeRect(plat.x + sx, plat.y + sy, plat.width, plat.height);
-    } else {
-      ctx.fillStyle = plat.moving ? '#555b66' : '#4a4f59';
-      ctx.fillRect(plat.x, plat.y, plat.width, plat.height);
 
-      if (plat.moving) {
-        ctx.fillStyle = '#ffcc33';
-        ctx.fillRect(plat.x, plat.y + 6, plat.width, 4);
+      const x = plat.x + sx;
+      const y = plat.y + sy;
+
+      // fragile metal base
+      ctx.fillStyle = '#30333c';
+      ctx.fillRect(x, y, plat.width, plat.height);
+
+      // hazard stripe band on front edge
+      ctx.fillStyle = '#ffcc33';
+      ctx.fillRect(x, y + plat.height - 5, plat.width, 5);
+      ctx.fillStyle = '#20242d';
+      for (let i = 0; i < plat.width; i += 10) {
+        ctx.beginPath();
+        ctx.moveTo(x + i, y + plat.height);
+        ctx.lineTo(x + i + 6, y + plat.height - 5);
+        ctx.lineTo(x + i + 10, y + plat.height - 5);
+        ctx.lineTo(x + i + 4, y + plat.height);
+        ctx.closePath();
+        ctx.fill();
       }
-    }
+
+      // crack lines to show it's weak (more cracks)
+ctx.strokeStyle = '#50545f';
+ctx.lineWidth = 1;
+
+// main left crack
+ctx.beginPath();
+ctx.moveTo(x + 6, y + 4);
+ctx.lineTo(x + 18, y + 8);
+ctx.lineTo(x + 26, y + 5);
+ctx.stroke();
+
+// main right crack
+ctx.beginPath();
+ctx.moveTo(x + plat.width - 24, y + 3);
+ctx.lineTo(x + plat.width - 12, y + 8);
+ctx.stroke();
+
+// extra small cracks
+ctx.beginPath();
+ctx.moveTo(x + plat.width * 0.3, y + 3);
+ctx.lineTo(x + plat.width * 0.3 + 6, y + 7);
+ctx.stroke();
+
+ctx.beginPath();
+ctx.moveTo(x + plat.width * 0.55, y + 5);
+ctx.lineTo(x + plat.width * 0.55 + 5, y + 9);
+ctx.stroke();
+
+ctx.beginPath();
+ctx.moveTo(x + plat.width * 0.7, y + 2);
+ctx.lineTo(x + plat.width * 0.7 + 7, y + 6);
+ctx.stroke();
+
+ctx.beginPath();
+ctx.moveTo(x + plat.width * 0.15, y + 7);
+ctx.lineTo(x + plat.width * 0.15 + 5, y + 11);
+ctx.stroke();
+
+      } else {
+      const x = plat.x;
+      const y = plat.y;
+
+      // same metal base as fragile platform
+      ctx.fillStyle = '#30333c';
+      ctx.fillRect(x, y, plat.width, plat.height);
+
+      // same hazard stripe band
+      ctx.fillStyle = '#ffcc33';
+      ctx.fillRect(x, y + plat.height - 5, plat.width, 5);
+      ctx.fillStyle = '#20242d';
+      for (let i = 0; i < plat.width; i += 10) {
+        ctx.beginPath();
+        ctx.moveTo(x + i, y + plat.height);
+        ctx.lineTo(x + i + 6, y + plat.height - 5);
+        ctx.lineTo(x + i + 10, y + plat.height - 5);
+        ctx.lineTo(x + i + 4, y + plat.height);
+        ctx.closePath();
+        ctx.fill();
+      }
+
+      // no cracks here – solid version
+  }
   }
 }
 
