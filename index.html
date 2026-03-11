@@ -131,12 +131,10 @@ const skins = [
   { id: 1, name: 'Angry Bot',   color: '#FF4444', cost: 10, unlocked: false },
   { id: 2, name: 'Dino Bot',    color: '#22AA55', cost: 10, unlocked: false },
   { id: 3, name: 'Hazmat Bot',  color: '#FFD800', cost: 10, unlocked: false },
-  { id: 4, name: 'Rust Bot',  color: '#B85C2D', cost: 10, unlocked: false }
+  { id: 4, name: 'Rust Bot',    color: '#B85C2D', cost: 10, unlocked: false }
 ];
 let selectedSkinIndex = 0;
 let skinsMenuSelection = 0;
-let skinsScrollOffset = 0;
-const SKINS_VISIBLE_COUNT = 4;
 
 // Fragile platforms
 const BALLOON_STAND_TIME = 45;
@@ -432,7 +430,6 @@ window.addEventListener('keydown', (e) => {
         gameState = 'upgrades';
       } else if (item === 'Skins') {
         skinsMenuSelection = selectedSkinIndex;
-        skinsScrollOffset = Math.max(0, Math.min(skinsMenuSelection, skins.length - SKINS_VISIBLE_COUNT));
         gameState = 'skins';
       } else if (item === 'Level Info') {
         gameState = 'levelInfo';
@@ -445,7 +442,6 @@ window.addEventListener('keydown', (e) => {
     if (e.code === 'KeyC') {
       gameState = 'skins';
       skinsMenuSelection = selectedSkinIndex;
-      skinsScrollOffset = Math.max(0, Math.min(skinsMenuSelection, skins.length - SKINS_VISIBLE_COUNT));
     }
   }
 
@@ -522,26 +518,13 @@ window.addEventListener('keydown', (e) => {
     }
   }
 
+  // Skins navigation: LEFT/RIGHT to change card
   if (gameState === 'skins') {
-    if (e.code === 'ArrowUp') {
-      if (skinsMenuSelection > 0) {
-        skinsMenuSelection--;
-      } else {
-        skinsMenuSelection = skins.length - 1;
-      }
-      if (skinsMenuSelection < skinsScrollOffset) {
-        skinsScrollOffset = skinsMenuSelection;
-      }
+    if (e.code === 'ArrowLeft') {
+      skinsMenuSelection = (skinsMenuSelection - 1 + skins.length) % skins.length;
     }
-    if (e.code === 'ArrowDown') {
-      if (skinsMenuSelection < skins.length - 1) {
-        skinsMenuSelection++;
-      } else {
-        skinsMenuSelection = 0;
-      }
-      if (skinsMenuSelection >= skinsScrollOffset + SKINS_VISIBLE_COUNT) {
-        skinsScrollOffset = skinsMenuSelection - SKINS_VISIBLE_COUNT + 1;
-      }
+    if (e.code === 'ArrowRight') {
+      skinsMenuSelection = (skinsMenuSelection + 1) % skins.length;
     }
     if (e.code === 'Enter') {
       const skin = skins[skinsMenuSelection];
@@ -982,10 +965,9 @@ function drawBackgroundAndPlatforms() {
       ctx.lineTo(x + plat.width * 0.15 + 5, y + 11);
       ctx.stroke();
     } else {
-      // solid version: same but no cracks
+      // solid version: same base but no cracks
       const x = plat.x;
       const y = plat.y;
-
       ctx.fillStyle = '#30333c';
       ctx.fillRect(x, y, plat.width, plat.height);
 
@@ -1192,26 +1174,23 @@ function drawPlayerAndWarnings() {
       ctx.fillStyle = '#FFCC00';
       ctx.fillRect(bodyX, bodyY + bodyH - 8, bodyW, 2);
     } else if (skin.id === 4) {
-  // Rust Bot: worn metal with rust patches
-  // torso
-  ctx.fillStyle = '#7A4A25';
-  ctx.fillRect(bodyX, bodyY + 5, bodyW, bodyH - 5);
-
-  // head
-  ctx.fillStyle = '#B85C2D';
-  ctx.fillRect(bodyX + 4, bodyY - 8, bodyW - 8, 12);
-
-  // eyes (dull orange)
-  ctx.fillStyle = '#FFB347';
-  ctx.fillRect(bodyX + 7, bodyY - 4, 3, 3);
-  ctx.fillRect(bodyX + bodyW - 10, bodyY - 4, 3, 3);
-
-  // rust patches
-  ctx.fillStyle = '#5A3318';
-  ctx.fillRect(bodyX + 3, bodyY + 10, 5, 4);
-  ctx.fillRect(bodyX + bodyW - 8, bodyY + 16, 4, 5);
-  ctx.fillRect(bodyX + 10, bodyY + bodyH - 10, 6, 3);
-}
+      // Rust Bot: worn metal with rust patches
+      // torso
+      ctx.fillStyle = '#7A4A25';
+      ctx.fillRect(bodyX, bodyY + 5, bodyW, bodyH - 5);
+      // head
+      ctx.fillStyle = '#B85C2D';
+      ctx.fillRect(bodyX + 4, bodyY - 8, bodyW - 8, 12);
+      // eyes (dull orange)
+      ctx.fillStyle = '#FFB347';
+      ctx.fillRect(bodyX + 7, bodyY - 4, 3, 3);
+      ctx.fillRect(bodyX + bodyW - 10, bodyY - 4, 3, 3);
+      // rust patches
+      ctx.fillStyle = '#5A3318';
+      ctx.fillRect(bodyX + 3, bodyY + 10, 5, 4);
+      ctx.fillRect(bodyX + bodyW - 8, bodyY + 16, 4, 5);
+      ctx.fillRect(bodyX + 10, bodyY + bodyH - 10, 6, 3);
+    }
 
     ctx.fillStyle = '#AAAAAA';
     ctx.fillRect(bodyX + bodyW / 2 - 1, bodyY - 14, 2, 6);
@@ -1347,7 +1326,8 @@ function drawUpgradesMenu() {
       ctx.fillText(`Magnet (Level: ${magnetLevel}) Cost: 15`, canvas.width / 2 - 240, y);
     } else if (item === 'Second Chance') {
       ctx.fillText(
-        `Second Chance (Req: Lvl 4)` + ` (${hasSecondChance ? 'OWNED' : 'Not owned'})`,
+        `Second Chance (Req: Lvl 4)` +
+          ` (${hasSecondChance ? 'OWNED' : 'Not owned'})`,
         canvas.width / 2 - 240,
         y
       );
@@ -1451,10 +1431,12 @@ function drawDeathScreen() {
   ctx.fillText('Up/Down: Move | Enter: Select | R: Quick Restart', canvas.width / 2, canvas.height - 40);
 }
 
+// Skins menu: 1 card per row, navigated with LEFT/RIGHT
 function drawSkinsMenu() {
   ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+  // Title + coins
   ctx.fillStyle = '#FFFFFF';
   ctx.font = 'bold 40px sans-serif';
   ctx.textAlign = 'center';
@@ -1464,56 +1446,149 @@ function drawSkinsMenu() {
   ctx.font = '20px sans-serif';
   ctx.fillText(`Coins: ${coins}`, canvas.width / 2, 100);
 
-  const startY = 150;
-  const lineHeight = 60;
+  const skin = skins[skinsMenuSelection];
 
-  const startIndex = skinsScrollOffset;
-  const endIndex = Math.min(skins.length, skinsScrollOffset + SKINS_VISIBLE_COUNT);
+  // Card layout
+  const cardWidth = 360;
+  const cardHeight = 220;
+  const cardX = canvas.width / 2 - cardWidth / 2;
+  const cardY = 120;
 
-  for (let i = startIndex; i < endIndex; i++) {
-    const skin = skins[i];
-    const row = i - startIndex;
-    const y = startY + row * lineHeight;
+  // Card background
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
+  roundedRect(ctx, cardX, cardY, cardWidth, cardHeight, 16);
+  ctx.fill();
 
-    if (i === skinsMenuSelection) {
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
-      roundedRect(ctx, canvas.width / 2 - 200, y - 25, 400, 50, 10);
-      ctx.fill();
-    }
+  // Card border – highlight if selected (always selected, but stronger border)
+  ctx.strokeStyle = skin.color;
+  ctx.lineWidth = 3;
+  roundedRect(ctx, cardX, cardY, cardWidth, cardHeight, 16);
+  ctx.stroke();
 
-    ctx.fillStyle = skin.color;
-    roundedRect(ctx, canvas.width / 2 - 180, y - 18, 36, 36, 6);
-    ctx.fill();
+  // Skin name + status
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'top';
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = '24px sans-serif';
+  ctx.fillText(skin.name, cardX + 20, cardY + 20);
 
+  ctx.font = '16px sans-serif';
+  let status = '';
+  if (skin.unlocked) {
+    status = (skinsMenuSelection === selectedSkinIndex) ? 'Equipped' : 'Owned';
+  } else {
+    status = `Locked – Cost: ${skin.cost}`;
+  }
+  ctx.fillStyle = skin.unlocked ? '#A0FFA0' : '#FFB347';
+  ctx.fillText(status, cardX + 20, cardY + 50);
+
+  // Robot preview box
+  const previewBoxX = cardX + 20;
+  const previewBoxY = cardY + 90;
+  const previewBoxW = 120;
+  const previewBoxH = 100;
+
+  ctx.fillStyle = '#1b1e26';
+  roundedRect(ctx, previewBoxX, previewBoxY, previewBoxW, previewBoxH, 10);
+  ctx.fill();
+
+  // Draw mini robot preview (reuse same logic but scaled)
+  const previewScale = 0.8;
+  const basePX = previewBoxX + previewBoxW / 2 - (player.width * previewScale) / 2;
+  const basePY = previewBoxY + previewBoxH / 2 - (player.height * previewScale) / 2;
+
+  ctx.save();
+  ctx.translate(basePX, basePY);
+  ctx.scale(previewScale, previewScale);
+
+  // minimal version of drawPlayer body using this skin
+  const bodyX = 0;
+  const bodyY = 0;
+  const bodyW = player.width;
+  const bodyH = player.height;
+
+  if (skin.id === 0) {
+    ctx.fillStyle = '#666666';
+    ctx.fillRect(bodyX, bodyY + 5, bodyW, bodyH - 5);
+    ctx.fillStyle = '#888888';
+    ctx.fillRect(bodyX + 4, bodyY - 8, bodyW - 8, 12);
+    ctx.fillStyle = '#00FFEE';
+    ctx.fillRect(bodyX + 7, bodyY - 4, 4, 4);
+    ctx.fillRect(bodyX + bodyW - 11, bodyY - 4, 4, 4);
+  } else if (skin.id === 1) {
+    ctx.fillStyle = '#AA0000';
+    ctx.fillRect(bodyX, bodyY + 5, bodyW, bodyH - 5);
+    ctx.fillStyle = '#CC2222';
+    ctx.fillRect(bodyX + 4, bodyY - 8, bodyW - 8, 12);
+    ctx.strokeStyle = '#FFFF00';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(bodyX + 6, bodyY - 2);
+    ctx.lineTo(bodyX + 10, bodyY - 4);
+    ctx.moveTo(bodyX + bodyW - 6, bodyY - 2);
+    ctx.lineTo(bodyX + bodyW - 10, bodyY - 4);
+    ctx.stroke();
+  } else if (skin.id === 2) {
+    ctx.fillStyle = '#1f8a3b';
+    ctx.fillRect(bodyX, bodyY + 5, bodyW, bodyH - 5);
+    ctx.fillStyle = '#2cab4a';
+    ctx.fillRect(bodyX + 2, bodyY - 6, bodyW - 4, 10);
     ctx.fillStyle = '#FFFFFF';
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'middle';
-    const status = skin.unlocked
-      ? i === selectedSkinIndex
-        ? '(Equipped)'
-        : '(Owned)'
-      : `(Cost: ${skin.cost})`;
-    ctx.fillText(`${skin.name} ${status}`, canvas.width / 2 - 130, y);
+    ctx.fillRect(bodyX + bodyW - 10, bodyY - 4, 4, 4);
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(bodyX + bodyW - 9, bodyY - 3, 2, 2);
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(bodyX + 4, bodyY + 2, 3, 3);
+    ctx.fillRect(bodyX + 8, bodyY + 2, 3, 3);
+  } else if (skin.id === 3) {
+    ctx.fillStyle = '#FFD800';
+    ctx.fillRect(bodyX, bodyY + 5, bodyW, bodyH - 5);
+    ctx.fillStyle = '#FFE866';
+    ctx.fillRect(bodyX + 3, bodyY - 8, bodyW - 6, 12);
+    ctx.fillStyle = '#333333';
+    ctx.fillRect(bodyX + 6, bodyY - 4, bodyW - 12, 6);
+    ctx.fillStyle = '#333333';
+    ctx.fillRect(bodyX, bodyY + bodyH - 10, bodyW, 4);
+    ctx.fillStyle = '#FFCC00';
+    ctx.fillRect(bodyX, bodyY + bodyH - 8, bodyW, 2);
+  } else if (skin.id === 4) {
+    ctx.fillStyle = '#7A4A25';
+    ctx.fillRect(bodyX, bodyY + 5, bodyW, bodyH - 5);
+    ctx.fillStyle = '#B85C2D';
+    ctx.fillRect(bodyX + 4, bodyY - 8, bodyW - 8, 12);
+    ctx.fillStyle = '#FFB347';
+    ctx.fillRect(bodyX + 7, bodyY - 4, 3, 3);
+    ctx.fillRect(bodyX + bodyW - 10, bodyY - 4, 3, 3);
+    ctx.fillStyle = '#5A3318';
+    ctx.fillRect(bodyX + 3, bodyY + 10, 5, 4);
+    ctx.fillRect(bodyX + bodyW - 8, bodyY + 16, 4, 5);
+    ctx.fillRect(bodyX + 10, bodyY + bodyH - 10, 6, 3);
   }
 
-  if (skinsScrollOffset > 0) {
-    ctx.fillStyle = '#CCCCCC';
-    ctx.font = '14px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('▲ more skins', canvas.width / 2, startY - 20);
-  }
-  if (skinsScrollOffset + SKINS_VISIBLE_COUNT < skins.length) {
-    ctx.fillStyle = '#CCCCCC';
-    ctx.font = '14px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('▼ more skins', canvas.width / 2, startY + SKINS_VISIBLE_COUNT * lineHeight);
-  }
+  // antenna & limbs in preview
+  ctx.fillStyle = '#AAAAAA';
+  ctx.fillRect(bodyX + bodyW / 2 - 1, bodyY - 14, 2, 6);
+  ctx.beginPath();
+  ctx.arc(bodyX + bodyW / 2, bodyY - 16, 2, 0, Math.PI * 2);
+  ctx.fill();
 
+  ctx.fillStyle = '#777777';
+  ctx.fillRect(bodyX - 4, bodyY + 12, 4, 10);
+  ctx.fillRect(bodyX + bodyW, bodyY + 12, 4, 10);
+
+  ctx.fillStyle = '#555555';
+  ctx.fillRect(bodyX + 4, bodyY + bodyH - 5, 6, 8);
+  ctx.fillRect(bodyX + bodyW - 10, bodyY + bodyH - 5, 6, 8);
+
+  ctx.restore();
+
+  // Help text
   ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
   ctx.fillStyle = '#CCCCCC';
   ctx.font = '18px sans-serif';
   ctx.fillText(
-    'Arrow Up/Down: Scroll | ENTER: Buy/Equip | ESC: Back',
+    'Arrow Left/Right: Change skin  |  ENTER: Buy/Equip  |  ESC: Back',
     canvas.width / 2,
     canvas.height - 40
   );
